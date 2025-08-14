@@ -1,0 +1,14 @@
+{
+  "name": "roboconsultacsv",
+  "version": "1.0.0",
+  "description": "Robo para consulta de CA a partir de um arquivo CSV",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.5",
+    "csv-parse": "^5.5.6",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
