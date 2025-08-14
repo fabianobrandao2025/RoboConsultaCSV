@@ -1,78 +1,34 @@
-// data.js - VERSÃO DE DIAGNÓSTICO DO ARQUIVO CSV
+// data.js - VERSÃO DE DIAGNÓSTICO FINAL DO ARQUIVO CSV
 const fs = require('fs');
 const path = require('path');
-const { parse } = require('csv-parse');
 
-const caData = new Map();
+// As outras bibliotecas não são necessárias para este teste
 let isDataReady = false;
 
 function loadData() {
-  console.log('[DADOS] Iniciando carregamento e diagnóstico do arquivo caepi.csv...');
-  const csvFilePath = path.resolve(__dirname, 'caepi.csv');
-  
-  // Usamos 'latin1' que é uma codificação comum para arquivos do governo brasileiro
-  const fileContent = fs.readFileSync(csvFilePath, 'latin1'); 
+  console.log('[DADOS] Iniciando diagnóstico do arquivo caepi.csv...');
+  try {
+    const csvFilePath = path.resolve(__dirname, 'caepi.csv');
+    
+    // Lê apenas os primeiros 1000 caracteres do arquivo
+    const fileSample = fs.readFileSync(csvFilePath, { encoding: 'latin1' }).substring(0, 1000);
 
-  const parser = parse(fileContent, {
-    delimiter: ';',
-    columns: true,
-    trim: true,
-    skip_empty_lines: true
-  });
+    console.log('--- DIAGNÓSTICO DO ARQUIVO CSV ---');
+    console.log('Amostra das primeiras linhas do arquivo (como o robô está a ler):');
+    console.log('====================================');
+    console.log(fileSample);
+    console.log('====================================');
+    console.log('Por favor, copie e cole o texto acima (entre as linhas ===) para análise.');
+    console.log('--- FIM DO DIAGNÓSTICO ---');
 
-  parser.on('readable', function(){
-    let record;
-    let firstRowProcessed = false;
-    while ((record = parser.read()) !== null) {
-      // --- INÍCIO DO DIAGNÓSTICO ---
-      // Na primeira linha de dados, imprime os nomes das colunas que ele encontrou
-      if (!firstRowProcessed) {
-        console.log('--- DIAGNÓSTICO DE COLUNAS ---');
-        console.log('Nomes das colunas encontrados no arquivo CSV:');
-        console.log(Object.keys(record));
-        console.log('Exemplo da primeira linha de dados:');
-        console.log(record);
-        console.log('--- FIM DO DIAGNÓSTICO ---');
-        firstRowProcessed = true;
-      }
-      // --- FIM DO DIAGNÓSTICO ---
-      
-      // Tentamos adivinhar qual é a coluna do CA
-      const caKey = record['Nº CA'] || record['NR_CA'];
-      if (caKey) {
-        caData.set(String(caKey).trim(), record);
-      }
-    }
-  });
-
-  parser.on('end', function(){
-    isDataReady = true;
-    console.log(`[DADOS] Base de dados carregada. Total de ${caData.size} registros.`);
-  });
-
-  parser.on('error', function(err){
+  } catch (err) {
     console.error('[DADOS] ERRO AO LER O ARQUIVO CSV:', err.message);
-  });
+  }
 }
 
 function getCAInfo(caNumber) {
-  if (!isDataReady) {
-    return { error: 'A base de dados ainda está a ser carregada. Por favor, tente novamente em um minuto.' };
-  }
-  
-  const caInfo = caData.get(String(caNumber).trim());
-  if (caInfo) {
-    // Usamos os nomes de coluna mais prováveis, com alternativas
-    return {
-      'Nº do CA': caInfo['Nº CA'] || caInfo['NR_CA'],
-      'Data de Validade': caInfo['Data de Validade'],
-      'Situação': caInfo.Situação,
-      'Equipamento': caInfo['Descrição do Equipamento'] || caInfo.DS_EQUIPAMENTO,
-      'Fabricante': caInfo['Nome do Fabricante / Importador'] || caInfo.NO_FABRICANTE
-    };
-  } else {
-    return { error: `O CA "${caNumber}" não foi encontrado na base de dados.` };
-  }
+  // Resposta padrão durante o diagnóstico
+  return { error: 'Robô em modo de diagnóstico. Verifique os logs do Render.' };
 }
 
 module.exports = { getCAInfo, loadData };
